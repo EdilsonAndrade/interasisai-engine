@@ -1,20 +1,20 @@
 <!-- SPECKIT START -->
-**Current Implementation Plan**: See [specs/002-secure-chat-intake/plan.md](../../specs/002-secure-chat-intake/plan.md)
+**Current Implementation Plan**: See [specs/003-semantic-cache-tts/plan.md](../../specs/003-semantic-cache-tts/plan.md)
 
 **Feature Context**:
-- Feature: Recepcao Segura de Input de Chat (LangChain bootstrap)
-- Branch: 002-init-ai-engine-security
-- Related Issue: EDI-24
+- Feature: Cache Semantico e Resposta em Audio
+- Branch: 003-before-specify
+- Related Issue: EDI-26
 
 **Key Artifacts**:
-- [Specification](../../specs/002-secure-chat-intake/spec.md) - Full feature requirements
-- [Implementation Plan](../../specs/002-secure-chat-intake/plan.md) - Design and architecture
-- [Research](../../specs/002-secure-chat-intake/research.md) - Technical decisions
-- [Data Model](../../specs/002-secure-chat-intake/data-model.md) - Entity definitions
-- [API Contract](../../specs/002-secure-chat-intake/contracts/chat-process-api.md) - Endpoint specification
-- [Quickstart](../../specs/002-secure-chat-intake/quickstart.md) - Setup and testing guide
+- [Specification](../../specs/003-semantic-cache-tts/spec.md) - Full feature requirements
+- [Implementation Plan](../../specs/003-semantic-cache-tts/plan.md) - Design and architecture
+- [Research](../../specs/003-semantic-cache-tts/research.md) - Technical decisions
+- [Data Model](../../specs/003-semantic-cache-tts/data-model.md) - Entity definitions
+- [API Contract](../../specs/003-semantic-cache-tts/contracts/chat-process-api.md) - Endpoint specification
+- [Quickstart](../../specs/003-semantic-cache-tts/quickstart.md) - Setup and testing guide
 
-**Previous Feature**: [specs/001-ai-engine-initialization/plan.md](../../specs/001-ai-engine-initialization/plan.md) (EDI-22)
+**Previous Feature**: [specs/002-secure-chat-intake/plan.md](../../specs/002-secure-chat-intake/plan.md) (EDI-24)
 
 **Constitutional Commitments**:
 - Clean Architecture (domain/application/infra/presentation layers)

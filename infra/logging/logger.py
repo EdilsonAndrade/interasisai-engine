@@ -21,3 +21,22 @@ class AppLogger(ILogger):
 
     def error(self, message: str) -> None:
         self._logger.error(message)
+
+    def event(
+        self,
+        *,
+        event_type: str,
+        request_id: str,
+        latency_ms: int,
+        similarity_score: float | None = None,
+    ) -> None:
+        payload = (
+            "event={event} request_id={request_id} latency_ms={latency_ms} "
+            "similarity_score={similarity_score}"
+        ).format(
+            event=event_type,
+            request_id=request_id,
+            latency_ms=latency_ms,
+            similarity_score=similarity_score,
+        )
+        self.info(payload)

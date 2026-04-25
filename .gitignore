@@ -1,7 +1,17 @@
 .env
+.env*
 .venv/
+venv/
 __pycache__/
 .pytest_cache/
 htmlcov/
 .coverage
 *.pyc
+dist/
+*.egg-info/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.idea/
+.vscode/

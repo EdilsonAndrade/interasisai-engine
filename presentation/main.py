@@ -8,8 +8,14 @@ from fastapi.responses import JSONResponse
 
 from application.services.consult_service import ConsultService
 from application.services.langchain_chat_use_case import LangChainChatUseCase
+from application.services.semantic_cache_service import SemanticCacheService
 from infra.config.settings import Settings, load_settings
+from infra.llm.provider_stub import LLMProviderStub
 from infra.logging.logger import AppLogger
+from infra.semantic.embedding_provider_stub import EmbeddingProviderStub
+from infra.semantic.in_memory_semantic_cache import InMemorySemanticCacheRepository
+from infra.speech.stt_provider_stub import STTProviderStub
+from infra.speech.tts_provider_stub import TTSProviderStub
 from infra.security.secret_validator import SecretValidator
 from presentation.middleware.security_middleware import SecurityMiddleware
 from presentation.routes.chat_routes import router as chat_router
@@ -18,15 +24,8 @@ from presentation.routes.consult_routes import router as consult_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = load_settings()
-    logger = AppLogger(settings.app_name, settings.log_level)
-    secret_validator = SecretValidator(settings)
-
-    app.state.settings = settings
-    app.state.logger = logger
-    app.state.secret_validator = secret_validator
-    app.state.consult_service = ConsultService()
-    app.state.chat_use_case = LangChainChatUseCase(logger=logger)
+    settings = load_settings(dotenv_path=".env")
+    _wire_dependencies(app, settings)
 
     yield
 
@@ -35,11 +34,7 @@ def create_app(settings_override: Settings | None = None) -> FastAPI:
     app = FastAPI(title="InterasisAI Engine", lifespan=lifespan)
 
     if settings_override is not None:
-        app.state.settings = settings_override
-        app.state.logger = AppLogger(settings_override.app_name, settings_override.log_level)
-        app.state.secret_validator = SecretValidator(settings_override)
-        app.state.consult_service = ConsultService()
-        app.state.chat_use_case = LangChainChatUseCase(logger=app.state.logger)
+        _wire_dependencies(app, settings_override)
 
     @app.middleware("http")
     async def security_middleware(request: Request, call_next):
@@ -47,7 +42,7 @@ def create_app(settings_override: Settings | None = None) -> FastAPI:
         if validator is None:
             settings = getattr(request.app.state, "settings", None)
             if settings is None:
-                settings = load_settings()
+                settings = load_settings(dotenv_path=".env")
                 request.app.state.settings = settings
             validator = SecretValidator(settings)
             request.app.state.secret_validator = validator
@@ -74,3 +69,32 @@ def create_app(settings_override: Settings | None = None) -> FastAPI:
 
 
 app = create_app()
+
+
+def _wire_dependencies(app: FastAPI, settings: Settings) -> None:
+    logger = AppLogger(settings.app_name, settings.log_level)
+    secret_validator = SecretValidator(settings)
+    semantic_repository = InMemorySemanticCacheRepository()
+    embedding_provider = EmbeddingProviderStub()
+    semantic_cache_service = SemanticCacheService(
+        repository=semantic_repository,
+        embedding_provider=embedding_provider,
+        threshold=settings.semantic_match_threshold,
+    )
+    llm_provider = LLMProviderStub()
+    stt_provider = STTProviderStub()
+    tts_provider = TTSProviderStub()
+
+    app.state.settings = settings
+    app.state.logger = logger
+    app.state.secret_validator = secret_validator
+    app.state.consult_service = ConsultService()
+    app.state.semantic_cache_service = semantic_cache_service
+    app.state.chat_use_case = LangChainChatUseCase(
+        semantic_cache_service=semantic_cache_service,
+        settings=settings,
+        llm_provider=llm_provider,
+        stt_provider=stt_provider,
+        tts_provider=tts_provider,
+        logger=logger,
+    )

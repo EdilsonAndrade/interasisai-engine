@@ -11,5 +11,8 @@ class ConsultResponseDTO:
 @dataclass(slots=True)
 class ChatProcessResponseDTO:
     status: str
-    agent_reply: str
-    received: dict = field(default_factory=dict)
+    source: str
+    message: dict
+    transcription: str | None = None
+    audio_unavailable: bool = False
+    metadata: dict = field(default_factory=dict)

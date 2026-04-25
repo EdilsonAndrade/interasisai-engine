@@ -12,14 +12,29 @@ class ConsultResponseSchema(BaseModel):
     timestamp: datetime
 
 
-class ChatProcessReceivedSchema(BaseModel):
-    has_text: bool
-    has_audio: bool
-    audio_filename: str | None = None
-    session_id: str | None = None
+class ChatAudioSchema(BaseModel):
+    mime_type: str
+    encoding: str = Field(pattern=r"^(base64)$")
+    content: str
+    duration_ms: int | None = None
+
+
+class ChatMessageSchema(BaseModel):
+    text: str = Field(min_length=1)
+    audio: ChatAudioSchema
+
+
+class ChatMetadataSchema(BaseModel):
+    request_id: str
+    similarity_score: float | None = None
+    threshold: float
+    latency_ms: int
 
 
 class ChatProcessResponseSchema(BaseModel):
-    status: str = Field(pattern=r"^(success|validation_error|unauthorized)$")
-    agent_reply: str = Field(min_length=1)
-    received: ChatProcessReceivedSchema
+    status: str = Field(pattern=r"^(success|partial_success|error)$")
+    source: str = Field(pattern=r"^(cache_hit|cache_miss)$")
+    message: ChatMessageSchema
+    transcription: str | None = None
+    audio_unavailable: bool
+    metadata: ChatMetadataSchema

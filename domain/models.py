@@ -26,6 +26,7 @@ class SecurityContext:
 @dataclass(slots=True)
 class ChatInput:
     text: str | None = None
+    audio_bytes: bytes | None = None
     audio_filename: str | None = None
     audio_content_type: str | None = None
     session_id: str | None = None
@@ -36,14 +37,67 @@ class ChatInput:
 
     @property
     def has_audio(self) -> bool:
-        return self.audio_filename is not None
+        return self.audio_filename is not None or self.audio_bytes is not None
+
+
+@dataclass(slots=True)
+class AudioPayload:
+    mime_type: str
+    encoding: str
+    content: str
+    duration_ms: int | None = None
+
+
+@dataclass(slots=True)
+class ResponseMetadata:
+    request_id: str
+    similarity_score: float | None
+    threshold: float
+    latency_ms: int
+
+
+@dataclass(slots=True)
+class RespostaMultimodal:
+    status: str
+    source: str
+    message_text: str
+    message_audio: AudioPayload
+    transcription: str | None
+    audio_unavailable: bool
+    metadata: ResponseMetadata
+
+
+@dataclass(slots=True)
+class RegistroSemantico:
+    semantic_id: str
+    query_canonical: str
+    embedding_vector: list[float]
+    response_text: str
+    response_audio: AudioPayload
+    created_at: datetime
+    updated_at: datetime
+    hit_count: int = 0
+
+
+@dataclass(slots=True)
+class EventoProcessamento:
+    request_id: str
+    event_type: str
+    latency_ms: int
+    similarity_score: float | None = None
+    details: dict = field(default_factory=dict)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass(slots=True)
 class ChatResult:
     status: str
-    agent_reply: str
-    received: dict = field(default_factory=dict)
+    source: str
+    message_text: str
+    message_audio: AudioPayload
+    transcription: str | None
+    audio_unavailable: bool
+    metadata: ResponseMetadata
 
 
 @dataclass(slots=True)
