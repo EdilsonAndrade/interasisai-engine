@@ -18,6 +18,12 @@ from infra.speech.stt_provider_stub import STTProviderStub
 from infra.speech.tts_provider_stub import TTSProviderStub
 from infra.security.secret_validator import SecretValidator
 from presentation.middleware.security_middleware import SecurityMiddleware
+from presentation.openapi import (
+    API_DESCRIPTION,
+    API_TITLE,
+    API_VERSION,
+    OPENAPI_TAGS,
+)
 from presentation.routes.chat_routes import router as chat_router
 from presentation.routes.consult_routes import router as consult_router
 
@@ -31,7 +37,13 @@ async def lifespan(app: FastAPI):
 
 
 def create_app(settings_override: Settings | None = None) -> FastAPI:
-    app = FastAPI(title="InterasisAI Engine", lifespan=lifespan)
+    app = FastAPI(
+        title=API_TITLE,
+        description=API_DESCRIPTION,
+        version=API_VERSION,
+        openapi_tags=OPENAPI_TAGS,
+        lifespan=lifespan,
+    )
 
     if settings_override is not None:
         _wire_dependencies(app, settings_override)

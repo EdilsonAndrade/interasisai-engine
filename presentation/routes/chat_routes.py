@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from application.services.langchain_chat_use_case import LangChainChatUseCase
 from domain.exceptions import EmptyChatInputError, InvalidChatInputError, TranscriptionFailedError
 from domain.models import ChatInput
+from presentation.openapi import TAG_CHAT, require_internal_secret
 from presentation.schemas import (
     ChatAudioSchema,
     ChatMessageSchema,
@@ -11,7 +12,15 @@ from presentation.schemas import (
     ChatProcessResponseSchema,
 )
 
-router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
+router = APIRouter(
+    prefix="/api/v1/chat",
+    tags=[TAG_CHAT],
+    dependencies=[Depends(require_internal_secret)],
+    responses={
+        403: {"description": "Bloqueio do Gatekeeper: cabecalho `X-Internal-Secret` ausente ou invalido."},
+        422: {"description": "Erro de validacao da entrada de chat."},
+    },
+)
 
 
 async def get_chat_use_case(request: Request) -> LangChainChatUseCase:
@@ -21,7 +30,16 @@ async def get_chat_use_case(request: Request) -> LangChainChatUseCase:
     return use_case
 
 
-@router.post("/process", response_model=ChatProcessResponseSchema)
+@router.post(
+    "/process",
+    response_model=ChatProcessResponseSchema,
+    summary="Processar mensagem de chat (texto e/ou audio)",
+    description=(
+        "Recebe entrada multimodal (texto e/ou audio) e retorna resposta em texto e audio. "
+        "Aplica cache semantico e expoe metadados operacionais. Requer cabecalho "
+        "`X-Internal-Secret`."
+    ),
+)
 async def process_chat(
     request: Request,
     text: str | None = Form(default=None),
